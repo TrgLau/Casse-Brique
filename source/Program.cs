@@ -208,12 +208,12 @@ partial class Program
             Random rand = new();
             for (int i = 0; i < cometWaveSize; i++)
             {
-                float y = rand.Next(0, 1); // haut de l'écran
-                float angleOffset = (float)(rand.NextDouble() * 0.1 - 0.10); // petite variation
+                float y = rand.Next(0, 1); 
+                float angleOffset = (float)(rand.NextDouble() * 0.1 - 0.10);
 
                 Vector2f startPos = new Vector2f(600 + i * 40, y);
 
-                // ✅ angle vers le bas-gauche, plus marqué
+             
                 Vector2f dir = new Vector2f(-1f, 0.5f + angleOffset);
 
                 comets.Add(new Comet(startPos, dir,2));
@@ -229,16 +229,16 @@ partial class Program
             deltaTime = clock.Restart().AsSeconds();
             cometWaveTimer += deltaTime;
 
-            // Mise à jour des comètes existantes
+    
             foreach (var comet in comets)
             {
                 comet.Update(deltaTime);
                 comet.Draw(window);
             }
-            // Nettoyage des comètes hors écran
+      
             comets.RemoveAll(c => c.IsOffScreen(window.Size));
 
-            // Timer pour les vagues
+       
             cometWaveTimer += deltaTime;
 
             if (cometWaveTimer >= cometWaveInterval)

@@ -59,7 +59,7 @@ public class Comet
     {
         Head = new CircleShape(radius)
         {
-            FillColor = new Color(255, 140, 0), // orange incandescent
+            FillColor = new Color(255, 140, 0), 
             Position = startPos,
             Origin = new Vector2f(radius, radius)
         };
@@ -70,11 +70,11 @@ public class Comet
         {
             float t = i / (float)trailLength;
 
-            // Orange → Jaune
+          
             byte r = 255;
-            byte g = (byte)(140 + t * 115); // 140 → 255
+            byte g = (byte)(140 + t * 115); 
             byte b = 0;
-            byte alpha = (byte)(180 - t * 160); // plus transparent vers la fin
+            byte alpha = (byte)(180 - t * 160); 
 
             var tShape = new CircleShape(radius)
             {

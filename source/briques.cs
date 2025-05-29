@@ -59,12 +59,14 @@ public class Brick
         explosionEffect?.Update(deltaTime);
     }
 
+
     private void UpdateColor()
+
     {
         Shape.FillColor = GetColorByHealth(Health);
         if (Type == "warp")
         {
-            Shape.FillColor = new Color(100, 100, 255); 
+            Shape.FillColor = new Color(100, 100, 255);
             return;
         }
     }
