@@ -12,7 +12,7 @@ partial class Program
     static List<Bonus> bonuses = new();
     static int currentLevel = 0;
 
-    enum GameState { Menu, Briques, Rogue, Exit }
+    enum GameState { Menu, Briques, Exit }
 
     static GameState gameState = GameState.Menu;
     static RenderWindow window;
@@ -26,19 +26,15 @@ partial class Program
 
     static RectangleShape playButton;
 
-    static RectangleShape rogueButton;
-
     static int selectedIndex = 0;
 
     static List<BackGrndStar> stars;
 
-
-
     public static List<Brick> DrawBricks(int levelIndex)
     {
         string jsonText = File.ReadAllText("levels.json");
-        LevelData levelData = JsonSerializer.Deserialize<LevelData>(jsonText);
 
+        LevelData levelData = JsonSerializer.Deserialize<LevelData>(jsonText);
 
         List<Brick> bricks = new();
 
@@ -49,7 +45,6 @@ partial class Program
             return bricks;
         }
 
-
         bricks = LevelLoader.LoadLevel("levels.json", 0);
         return bricks;
     }
@@ -59,19 +54,13 @@ partial class Program
         if (selectedIndex == 0)
         {
             playButton.FillColor = Color.Yellow;
-            rogueButton.FillColor = Color.Green;
+         
             quitButton.FillColor = Color.Red;
         }
         else if (selectedIndex == 1)
         {
             playButton.FillColor = Color.Green;
-            rogueButton.FillColor = Color.Yellow;
-            quitButton.FillColor = Color.Red;
-        }
-        else if (selectedIndex == 2)
-        {
-            playButton.FillColor = Color.Green;
-            rogueButton.FillColor = Color.Green;
+          
             quitButton.FillColor = Color.Yellow;
         }
     }
@@ -79,7 +68,7 @@ partial class Program
     static void Main()
     {
 
-        window = new RenderWindow(new VideoMode(800, 600), "Debug LAULAU");
+        window = new RenderWindow(new VideoMode(800, 600), "Casse-Briques ( Debug Version )");
         window.SetFramerateLimit(60);
         window.Closed += (s, e) => window.Close();
 
@@ -94,7 +83,6 @@ partial class Program
             OutlineColor = Color.White,
             FillColor = Color.Transparent
         };
-
 
         font = new Font("arial.ttf");
 
@@ -114,18 +102,15 @@ partial class Program
             }
         }
 
-
         CreateStarLayer(40, 20f, 0.8f, 1.5f, 80);
         CreateStarLayer(40, 40f, 1.0f, 2.0f, 140);
         CreateStarLayer(40, 70f, 1.5f, 3.0f, 220);
-
 
         Random rand = new();
 
         clock2 = new Clock();
 
-
-        Text titleText = new Text("Multi-Jeux", font, 60)
+        Text titleText = new Text("Casse-Briques", font, 60)
         {
             Position = new Vector2f(200, 100),
             FillColor = Color.Cyan
@@ -139,18 +124,13 @@ partial class Program
 
         quitButton = new RectangleShape(new Vector2f(200, 60))
         {
-            Position = new Vector2f(300, 450),
+            Position = new Vector2f(300, 350),
             FillColor = Color.Red
         };
 
-        rogueButton = new RectangleShape(new Vector2f(200, 60))
-        {
-            Position = new Vector2f(300, 350),
-            FillColor = Color.Green
-        };
+    
 
-
-        Text playText = new Text("Brique", font, 24)
+        Text playText = new Text("Jouer", font, 24)
         {
             FillColor = Color.Black,
             Position = new Vector2f(
@@ -158,14 +138,7 @@ partial class Program
                 playButton.Position.Y + 15
             )
         };
-        Text rogueText = new Text("Rogue", font, 24)
-        {
-            FillColor = Color.Black,
-            Position = new Vector2f(
-                rogueButton.Position.X + 60,
-                rogueButton.Position.Y + 15
-            )
-        };
+        
 
         Text quitText = new Text("Quitter", font, 24)
         {
@@ -196,8 +169,6 @@ partial class Program
                     if (selectedIndex == 0)
                         gameState = GameState.Briques;
                     else if (selectedIndex == 1)
-                        gameState = GameState.Rogue;
-                    else if (selectedIndex == 2)
                         gameState = GameState.Exit;
                 }
             }
@@ -215,8 +186,6 @@ partial class Program
 
                 else if (quitButton.GetGlobalBounds().Contains(worldPos.X, worldPos.Y))
                     gameState = GameState.Exit;
-                else if (rogueButton.GetGlobalBounds().Contains(worldPos.X, worldPos.Y))
-                    gameState = GameState.Rogue;
             }
         };
 
@@ -235,28 +204,20 @@ partial class Program
 
             if (gameState == GameState.Menu)
             {
-
                 window.Draw(titleText);
                 window.Draw(playButton);
                 window.Draw(quitButton);
                 window.Draw(playText);
                 window.Draw(quitText);
                 window.Draw(gameBorder);
-                window.Draw(rogueButton);
-                window.Draw(rogueText);
             }
             else if (gameState == GameState.Briques)
             {
-
                 gameloop();
             }
             else if (gameState == GameState.Exit)
             {
                 window.Close();
-            }
-            else if (gameState == GameState.Rogue)
-            {
-               // RogueInit();
             }
 
             window.Display();

@@ -1,5 +1,5 @@
 ## Build ##
-bin/
+bin/Debug/net8.0/runtimes
 obj/
 out/
 *.exe
