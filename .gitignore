@@ -1,0 +1,55 @@
+## Build ##
+bin/
+obj/
+out/
+*.exe
+*.dll
+*.app
+*.so
+*.dylib
+*.pdb
+*.cache
+*.db
+
+## User-specific files ##
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## VS Code ##
+.vscode/
+
+## Visual Studio ##
+.vs/
+Generated_Code/
+
+## Rider ##
+.idea/
+
+## NuGet Packages ##
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+project.lock.json
+project.fragment.lock.json
+
+## Logs and temp ##
+*.log
+*.tmp
+*.temp
+
+## OS Files ##
+.DS_Store
+Thumbs.db
+
+## Backup files ##
+*~
+*.bak
+*.old
+
+## Others ##
+TestResults/
+*.coverage
+*.coveragexml
