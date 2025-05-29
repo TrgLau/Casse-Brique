@@ -49,7 +49,7 @@ public class Comet
 {
     public CircleShape Head;
     private List<CircleShape> trail = new();
-    private int trailLength = 20;
+    private int trailLength = 100;
 
     private Vector2f velocity;
     private float speed = 60f; 
@@ -59,26 +59,37 @@ public class Comet
     {
         Head = new CircleShape(radius)
         {
-            FillColor = Color.White,
+            FillColor = new Color(255, 140, 0), // orange incandescent
             Position = startPos,
             Origin = new Vector2f(radius, radius)
         };
 
         velocity = Normalize(direction) * speed;
-
+        
         for (int i = 0; i < trailLength; i++)
         {
-            var t = new CircleShape(radius)
+            float t = i / (float)trailLength;
+
+            // Orange → Jaune
+            byte r = 255;
+            byte g = (byte)(140 + t * 115); // 140 → 255
+            byte b = 0;
+            byte alpha = (byte)(180 - t * 160); // plus transparent vers la fin
+
+            var tShape = new CircleShape(radius)
             {
-                FillColor = new Color(255, 255, 255, (byte)(180 - i * 8)),
+                FillColor = new Color(r, g, b, alpha),
                 Radius = radius,
                 Origin = new Vector2f(radius, radius),
                 Position = startPos
             };
-            trail.Add(t);
+            trail.Add(tShape);
         }
     }
-
+    public bool IsOffScreen(Vector2u windowSize)
+    {
+            return Head.Position.X < -100 || Head.Position.Y < -100 || Head.Position.Y > windowSize.Y + 100;
+    }
     public void Update(float deltaTime)
     {
         Vector2f newPos = Head.Position + velocity * deltaTime;
@@ -105,14 +116,16 @@ public class Comet
 
     private void Reset()
     {
-   
-        Vector2f start = new Vector2f(900, rand.Next(100, 300));
-        Vector2f dir = new Vector2f(-1f, rand.Next(-10, 10) / 100f);
+        Vector2f start = new Vector2f(900, rand.Next(50, 200));
+        Vector2f dir = new Vector2f(-1f, 0.5f + (float)(rand.NextDouble() * 0.1 - 0.05));
+
         Head.Position = start;
         velocity = Normalize(dir) * speed;
 
         for (int i = 0; i < trail.Count; i++)
+        {
             trail[i].Position = start;
+        }
     }
 
     private Vector2f Normalize(Vector2f v)

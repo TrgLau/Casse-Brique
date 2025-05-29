@@ -11,11 +11,10 @@ partial class Program
 {
     static List<Bonus> bonuses = new();
     static int currentLevel = 0;
-    enum GameState { Menu, Briques,Options, Exit }
+    enum GameState { Menu,Jouer,Options, Exit }
     static GameState gameState = GameState.Menu;
     static RenderWindow window;
     static Clock clock;
-    static Clock clock2;
     static Font font;
 
     static float deltaTime;
@@ -25,6 +24,8 @@ partial class Program
     static RectangleShape playButton;
 
     static int selectedIndex = 0;
+
+    static GameState currentState = new();
 
     static List<BackGrndStar> stars;
 
@@ -100,9 +101,12 @@ partial class Program
 
         Random rand = new();
  
-        clock2 = new Clock();
+        clock = new Clock();
 
-        selectedIndex = 0;
+        List<string> menuItems = new() {"Jouer","Options","Quitter"};
+        int selectedIndex = 0;
+
+        
 
         ///////////////////////////////
         /// étoiles du background
@@ -127,106 +131,123 @@ partial class Program
         CreateStarLayer(40, 7f, 1.5f, 3.0f, 220);
 
 
-        Comet comet = new Comet(new Vector2f(-100, 200), new Vector2f(1f, 0.2f));
+        List<Comet> comets = new();
+        float cometWaveTimer = 0f;
+        float cometWaveInterval = 20f; 
+        int cometWaveSize = 2;
 
-
-        //////////////////////////////
-        /// Menu
-        /// 
-
-
-        Text titleText = new Text("Casse-Briques", font, 60)
-        {
-            Position = new Vector2f(200, 100),
-            FillColor = Color.Cyan
-        };
-
-        playButton = new RectangleShape(new Vector2f(200, 60))
-        {
-            Position = new Vector2f(300, 250),
-            FillColor = Color.Green
-        };
-
-        quitButton = new RectangleShape(new Vector2f(200, 60))
-        {
-            Position = new Vector2f(300, 350),
-            FillColor = Color.Red
-        };
-
-    
-
-        Text playText = new Text("Jouer", font, 24)
-        {
-            FillColor = Color.Black,
-            Position = new Vector2f(
-                playButton.Position.X + 60,
-                playButton.Position.Y + 15
-            )
-        };
-        
-
-        Text quitText = new Text("Quitter", font, 24)
-        {
-            FillColor = Color.Black,
-            Position = new Vector2f(
-                quitButton.Position.X + 50,
-                quitButton.Position.Y + 15
-            )
-        };
-        UpdateMenuSelection();
 
 
         //////////////////
         /// Menu
         /// 
+        /// 
+        /// 
+        /// 
+
+
+        void UpdateOptions()
+        {
+            if (Keyboard.IsKeyPressed(Keyboard.Key.Escape))
+                currentState = GameState.Menu;
+        }
+        
+        void DrawOptions()
+        {
+            Text title = new("OPTIONS", font, 32)
+            {
+                Position = new Vector2f(100, 100),
+                FillColor = Color.Cyan
+            };
+
+            Text hint = new("[Échap] Retour", font, 16)
+            {
+                Position = new Vector2f(100, 160),
+                FillColor = Color.Blue
+            };
+
+            window.Draw(title);
+            window.Draw(hint);
+        }
+
 
         window.KeyPressed += (sender, e) =>
         {
             if (gameState == GameState.Menu)
             {
-                if (e.Code == Keyboard.Key.Down)
+                if (e.Code == Keyboard.Key.Up)
                 {
-                    selectedIndex = (selectedIndex + 1) % 3;
-                    UpdateMenuSelection();
+                    selectedIndex = (selectedIndex - 1 + menuItems.Count) % menuItems.Count;
                 }
-                else if (e.Code == Keyboard.Key.Up)
+                else if (e.Code == Keyboard.Key.Down)
                 {
-                    selectedIndex = (selectedIndex - 1) % 3;
-                    UpdateMenuSelection();
+                    selectedIndex = (selectedIndex + 1) % menuItems.Count;
                 }
                 else if (e.Code == Keyboard.Key.Enter)
                 {
-                    if (selectedIndex == 0)
-                        gameState = GameState.Briques;
-                    else if (selectedIndex == 1)
-                        gameState = GameState.Exit;
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            currentState = GameState.Jouer;
+                            gameloop();
+                            break;
+                        case 1:
+                            currentState = GameState.Options;
+                            break;
+                        case 2:
+                            currentState = GameState.Exit;
+                            break;
+                    }
                 }
+
             }
         };
 
-        window.MouseButtonPressed += (sender, e) =>
+        void SpawnCometWave()
         {
-            if (gameState == GameState.Menu && e.Button == Mouse.Button.Left)
+            Random rand = new();
+            for (int i = 0; i < cometWaveSize; i++)
             {
-                var mousePos = Mouse.GetPosition(window);
-                var worldPos = new Vector2f(mousePos.X, mousePos.Y);
+                float y = rand.Next(0, 1); // haut de l'écran
+                float angleOffset = (float)(rand.NextDouble() * 0.1 - 0.10); // petite variation
 
-                if (playButton.GetGlobalBounds().Contains(worldPos.X, worldPos.Y))
-                    gameState = GameState.Briques;
+                Vector2f startPos = new Vector2f(600 + i * 40, y);
 
-                else if (quitButton.GetGlobalBounds().Contains(worldPos.X, worldPos.Y))
-                    gameState = GameState.Exit;
+                // ✅ angle vers le bas-gauche, plus marqué
+                Vector2f dir = new Vector2f(-1f, 0.5f + angleOffset);
+
+                comets.Add(new Comet(startPos, dir,2));
             }
-        };
+        }
 
+        
         while (window.IsOpen)
         {
             window.DispatchEvents();
             window.Clear();
 
-            comet.Update(deltaTime);
+            deltaTime = clock.Restart().AsSeconds();
+            cometWaveTimer += deltaTime;
 
-            deltaTime = clock2.Restart().AsSeconds();
+            // Mise à jour des comètes existantes
+            foreach (var comet in comets)
+            {
+                comet.Update(deltaTime);
+                comet.Draw(window);
+            }
+            // Nettoyage des comètes hors écran
+            comets.RemoveAll(c => c.IsOffScreen(window.Size));
+
+            // Timer pour les vagues
+            cometWaveTimer += deltaTime;
+
+            if (cometWaveTimer >= cometWaveInterval)
+            {
+                SpawnCometWave();
+                cometWaveTimer = 0f;
+            }
+
+
 
             foreach (var star in stars)
             {
@@ -236,15 +257,37 @@ partial class Program
 
             if (gameState == GameState.Menu)
             {
-                comet.Draw(window);
-                window.Draw(titleText);
-                window.Draw(playButton);
-                window.Draw(quitButton);
-                window.Draw(playText);
-                window.Draw(quitText);
+                foreach (var c in comets)
+                    c.Draw(window);
+
+                comets.RemoveAll(c => c.IsOffScreen(window.Size));
+
+                switch (currentState)
+                {
+                    case GameState.Jouer:
+                        gameloop();
+                        break;
+                    case GameState.Options:
+                        UpdateOptions();
+                        DrawOptions();
+                        break;
+                    case GameState.Exit:
+                        window.Close();
+                        break;
+                }
+                for (int i = 0; i < menuItems.Count; i++)
+                {
+                    var text = new Text(menuItems[i], font, 24)
+                    {
+                        Position = new Vector2f(350, 200 + i * 40),
+                        FillColor = i == selectedIndex ? Color.Yellow : Color.White
+                    };
+                    window.Draw(text);
+                }
+            
                 window.Draw(gameBorder);
             }
-            else if (gameState == GameState.Briques)
+            else if (gameState == GameState.Jouer)
             {
                 gameloop();
             }
@@ -252,6 +295,8 @@ partial class Program
             {
                 window.Close();
             }
+
+            comets.RemoveAll(c => c.IsOffScreen(window.Size));
 
             window.Display();
         }

@@ -47,9 +47,9 @@ partial class Program
 
         float timeSinceLevelStart = 0f;
 
-        clock2 = new Clock();
+        clock = new Clock();
 
-        deltaTime = clock2.Restart().AsSeconds();
+        deltaTime = clock.Restart().AsSeconds();
 
 
 
@@ -153,6 +153,7 @@ partial class Program
             window.DispatchEvents();
             window.Clear(Color.Black);
 
+            deltaTime = clock.Restart().AsSeconds();
 
             if (!entitiesSpawned)
             {
@@ -191,10 +192,9 @@ partial class Program
 
             window.Draw(gameBorder);
             timeSinceLevelStart += deltaTime;
-            float dt = clock.Restart().AsSeconds();
+     
 
-            deltaTime = clock2.Restart().AsSeconds();
-
+         
             if (doubleScoreTimer > 0)
                 doubleScoreTimer -= deltaTime;
 
@@ -223,9 +223,9 @@ partial class Program
 
             float paddleSpeed = 400f;
             if (Keyboard.IsKeyPressed(Keyboard.Key.Left))
-                paddle.Position -= new Vector2f(paddleSpeed * dt, 0);
+                paddle.Position -= new Vector2f(paddleSpeed * deltaTime, 0);
             if (Keyboard.IsKeyPressed(Keyboard.Key.Right))
-                paddle.Position += new Vector2f(paddleSpeed * dt, 0);
+                paddle.Position += new Vector2f(paddleSpeed * deltaTime, 0);
 
             paddle.Position = new Vector2f(Math.Clamp(paddle.Position.X, 8, 800 - paddle.Size.X - 8), paddle.Position.Y);
 
