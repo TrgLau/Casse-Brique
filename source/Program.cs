@@ -11,9 +11,7 @@ partial class Program
 {
     static List<Bonus> bonuses = new();
     static int currentLevel = 0;
-
-    enum GameState { Menu, Briques, Exit }
-
+    enum GameState { Menu, Briques,Options, Exit }
     static GameState gameState = GameState.Menu;
     static RenderWindow window;
     static Clock clock;
@@ -68,11 +66,21 @@ partial class Program
     static void Main()
     {
 
+
+        ////////////////////////////////////
+        /// Gestion fenetre
+        /// 
+
         window = new RenderWindow(new VideoMode(800, 600), "Casse-Briques ( Debug Version )");
         window.SetFramerateLimit(60);
         window.Closed += (s, e) => window.Close();
 
-        const float borderThickness = 8f;
+
+        ////////////////////////////////////
+        /// Gestion de la bordure
+        /// 
+
+        const float borderThickness = 8f;  // épaisseur de la bordure
 
         RectangleShape gameBorder = new RectangleShape(new Vector2f(
             window.Size.X - borderThickness * 2,
@@ -84,31 +92,48 @@ partial class Program
             FillColor = Color.Transparent
         };
 
+        ////////////////////////////
+        /// Variables
+        /// 
+
         font = new Font("arial.ttf");
+
+        Random rand = new();
+ 
+        clock2 = new Clock();
 
         selectedIndex = 0;
 
+        ///////////////////////////////
+        /// étoiles du background
+        /// 
+
+
         stars = new();
-        Random rand2 = new();
 
         void CreateStarLayer(int count, float speed, float sizeMin, float sizeMax, byte alpha)
         {
             for (int i = 0; i < count; i++)
             {
-                float x = rand2.Next(0, 800);
-                float y = rand2.Next(0, 600);
-                float size = (float)(rand2.NextDouble() * (sizeMax - sizeMin) + sizeMin);
+                float x = rand.Next(0, 800);
+                float y = rand.Next(0, 600);
+                float size = (float)(rand.NextDouble() * (sizeMax - sizeMin) + sizeMin);
                 stars.Add(new BackGrndStar(x, y, size, speed, alpha));
             }
         }
 
-        CreateStarLayer(40, 20f, 0.8f, 1.5f, 80);
-        CreateStarLayer(40, 40f, 1.0f, 2.0f, 140);
-        CreateStarLayer(40, 70f, 1.5f, 3.0f, 220);
+        CreateStarLayer(100, 2f, 0.8f, 1.5f, 80);
+        CreateStarLayer(100, 4f, 1.0f, 2.0f, 140);
+        CreateStarLayer(40, 7f, 1.5f, 3.0f, 220);
 
-        Random rand = new();
 
-        clock2 = new Clock();
+        Comet comet = new Comet(new Vector2f(-100, 200), new Vector2f(1f, 0.2f));
+
+
+        //////////////////////////////
+        /// Menu
+        /// 
+
 
         Text titleText = new Text("Casse-Briques", font, 60)
         {
@@ -149,6 +174,11 @@ partial class Program
             )
         };
         UpdateMenuSelection();
+
+
+        //////////////////
+        /// Menu
+        /// 
 
         window.KeyPressed += (sender, e) =>
         {
@@ -194,6 +224,8 @@ partial class Program
             window.DispatchEvents();
             window.Clear();
 
+            comet.Update(deltaTime);
+
             deltaTime = clock2.Restart().AsSeconds();
 
             foreach (var star in stars)
@@ -204,6 +236,7 @@ partial class Program
 
             if (gameState == GameState.Menu)
             {
+                comet.Draw(window);
                 window.Draw(titleText);
                 window.Draw(playButton);
                 window.Draw(quitButton);

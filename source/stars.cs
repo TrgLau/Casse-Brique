@@ -45,3 +45,79 @@ public class BackGrndStar
         Shape.FillColor = new Color(255, 255, 255, newAlpha);
     }
 }
+public class Comet
+{
+    public CircleShape Head;
+    private List<CircleShape> trail = new();
+    private int trailLength = 20;
+
+    private Vector2f velocity;
+    private float speed = 60f; 
+    private static Random rand = new();
+
+    public Comet(Vector2f startPos, Vector2f direction, float radius = 6f)
+    {
+        Head = new CircleShape(radius)
+        {
+            FillColor = Color.White,
+            Position = startPos,
+            Origin = new Vector2f(radius, radius)
+        };
+
+        velocity = Normalize(direction) * speed;
+
+        for (int i = 0; i < trailLength; i++)
+        {
+            var t = new CircleShape(radius)
+            {
+                FillColor = new Color(255, 255, 255, (byte)(180 - i * 8)),
+                Radius = radius,
+                Origin = new Vector2f(radius, radius),
+                Position = startPos
+            };
+            trail.Add(t);
+        }
+    }
+
+    public void Update(float deltaTime)
+    {
+        Vector2f newPos = Head.Position + velocity * deltaTime;
+
+       
+        for (int i = trailLength - 1; i > 0; i--)
+            trail[i].Position = trail[i - 1].Position;
+
+        trail[0].Position = Head.Position;
+        Head.Position = newPos;
+
+       
+        if (Head.Position.X < -100 || Head.Position.Y > 700 || Head.Position.Y < -100)
+            Reset();
+    }
+
+    public void Draw(RenderWindow window)
+    {
+        foreach (var t in trail)
+            window.Draw(t);
+
+        window.Draw(Head);
+    }
+
+    private void Reset()
+    {
+   
+        Vector2f start = new Vector2f(900, rand.Next(100, 300));
+        Vector2f dir = new Vector2f(-1f, rand.Next(-10, 10) / 100f);
+        Head.Position = start;
+        velocity = Normalize(dir) * speed;
+
+        for (int i = 0; i < trail.Count; i++)
+            trail[i].Position = start;
+    }
+
+    private Vector2f Normalize(Vector2f v)
+    {
+        float len = MathF.Sqrt(v.X * v.X + v.Y * v.Y);
+        return len == 0 ? new Vector2f(-1, 0) : v / len;
+    }
+}

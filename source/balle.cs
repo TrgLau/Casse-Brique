@@ -56,22 +56,31 @@ public class Ball
         Velocity = Normalize(Velocity) * Speed * multiplier;
     }
 
-    public void CheckWallCollision(Vector2u windowSize)
+    public void CheckWallCollision(Vector2u windowSize )
+{
+    var pos = Shape.Position;
+
+    
+    if (pos.X - Radius <= 8f)
     {
-        var pos = Shape.Position;
-
-        if (pos.X - Radius <= 8f || pos.X + Radius >= windowSize.X - 8f)
-        {
-            Velocity = new Vector2f(-Velocity.X, Velocity.Y);
-            bordsSound.Play();
-        }
-
-        if (pos.Y - Radius <= 8f)
-        {
-            Velocity = new Vector2f(Velocity.X, -Velocity.Y);
-            bordsSound.Play();
-        }
+        Velocity = new Vector2f(MathF.Abs(Velocity.X), Velocity.Y); 
+        Shape.Position = new Vector2f(8f + Radius + 0.5f, pos.Y); 
     }
+    else if (pos.X + Radius >= windowSize.X - 8f)
+    {
+        Velocity = new Vector2f(-MathF.Abs(Velocity.X), Velocity.Y); 
+        Shape.Position = new Vector2f(windowSize.X - 8f - Radius - 0.5f, pos.Y);
+    }
+
+
+    if (pos.Y - Radius <= 8f)
+    {
+        Velocity = new Vector2f(Velocity.X, MathF.Abs(Velocity.Y)); 
+        Shape.Position = new Vector2f(pos.X, 8f + Radius + 0.5f);
+    }
+
+
+}
 
     public void CheckPaddleCollision(RectangleShape paddle)
     {
@@ -88,41 +97,65 @@ public class Ball
 
     public int CheckBrickCollisions(List<Brick> bricks, List<Bonus> bonuses,bool isFireBallActive,int score , bool isDoubleScoreActive)
     {
+        
         var warpBricks = bricks.Where(b => b.Type == "warp" && !b.IsDestroyed).ToList();
         foreach (var brick in bricks.ToList())
         {
+            
             if (Shape.GetGlobalBounds().Intersects(brick.Shape.GetGlobalBounds()))
             {
-                if(!isFireBallActive)bounceSound.Play();
+                if (!isFireBallActive) bounceSound.Play();
                 brick.Hit();
                 if (brick.Type == "warp" && warpBricks.Count == 2)
                 {
                     var current = brick;
                     var target = warpBricks.First(b => b != current);
 
-            
-                    Shape.Position = target.Shape.Position + new Vector2f(0, -Radius * 2); 
-               
-                    break; 
+                    Shape.Position = target.Shape.Position + new Vector2f(0, -Radius * 2);
+
+                    break;
                 }
                 if (brick.IsDestroyed && brick.Health == 0 && !brick.explosionEffect.IsFinished)
                 {
-
                     score += isDoubleScoreActive ? 200 : 100;
                     if (new Random().NextDouble() < 1)
-
                     {
-
                         var type = (BonusType)new Random().Next(Enum.GetValues(typeof(BonusType)).Length);
                         Font font = new Font("arial.ttf");
                         bonuses.Add(new Bonus(brick.Shape.Position, type, font));
                     }
 
                 }
-
                 if (!isFireBallActive)
-                    Velocity = new Vector2f(Velocity.X, -Velocity.Y);
+                {
+                    FloatRect ballBounds = Shape.GetGlobalBounds();
+                    FloatRect brickBounds = brick.Shape.GetGlobalBounds();
 
+                    Vector2f ballCenter = new Vector2f(ballBounds.Left + ballBounds.Width / 2f, ballBounds.Top + ballBounds.Height / 2f);
+                    Vector2f brickCenter = new Vector2f(brickBounds.Left + brickBounds.Width / 2f, brickBounds.Top + brickBounds.Height / 2f);
+
+                    Vector2f delta = ballCenter - brickCenter;
+                    Vector2f absDelta = new Vector2f(MathF.Abs(delta.X), MathF.Abs(delta.Y));
+
+                    float overlapX = (brickBounds.Width / 2f + Radius) - absDelta.X;
+                    float overlapY = (brickBounds.Height / 2f + Radius) - absDelta.Y;
+
+                    if (overlapX > 0 && overlapY > 0) 
+                    {
+                        if (overlapX < overlapY)
+                        {
+                         
+                            Velocity = new Vector2f(-Velocity.X, Velocity.Y);
+                            Shape.Position += new Vector2f(MathF.Sign(delta.X) * overlapX, 0f); 
+                        }
+                        else
+                        {
+                          
+                            Velocity = new Vector2f(Velocity.X, -Velocity.Y);
+                            Shape.Position += new Vector2f(0f, MathF.Sign(delta.Y) * overlapY); 
+                        }
+                    }
+                }
 
                 if (!isFireBallActive)
                     return score;

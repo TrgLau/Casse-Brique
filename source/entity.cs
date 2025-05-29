@@ -39,12 +39,12 @@ public class Entity
         {
             spawnFlashTimer -= deltaTime;
 
-            float pulse = (float)(Math.Sin(spawnFlashTimer * 20f) + 1f) / 2f; // oscille entre 0 et 1
+            float pulse = (float)(Math.Sin(spawnFlashTimer * 20f) + 1f) / 2f; 
             Shape.FillColor = new Color(255, 255, 255, (byte)(255 * pulse));
         }
         else
         {
-            // couleur normale après flash
+          
             if (Shape.FillColor != new Color(255, 0, 255))
                 Shape.FillColor = new Color(255, 0, 255);
         }

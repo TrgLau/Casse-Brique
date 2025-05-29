@@ -64,7 +64,7 @@ public class Brick
         Shape.FillColor = GetColorByHealth(Health);
         if (Type == "warp")
         {
-            Shape.FillColor = new Color(100, 100, 255); // bleu lumineux
+            Shape.FillColor = new Color(100, 100, 255); 
             return;
         }
     }
