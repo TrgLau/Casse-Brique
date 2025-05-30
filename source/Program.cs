@@ -5,8 +5,6 @@ using SFML.Audio;
 
 using System.Text.Json;
 
-
-
 partial class Program
 {
     static List<Bonus> bonuses = new();
@@ -16,19 +14,12 @@ partial class Program
     static RenderWindow window;
     static Clock clock;
     static Font font;
-
     static float deltaTime;
-
     static RectangleShape quitButton;
-
     static RectangleShape playButton;
-
     static int selectedIndex = 0;
-
     static GameState currentState = new();
-
     static List<BackGrndStar> stars;
-
     public static List<Brick> DrawBricks(int levelIndex)
     {
         string jsonText = File.ReadAllText("levels.json");
@@ -47,7 +38,6 @@ partial class Program
         bricks = LevelLoader.LoadLevel("levels.json", 0);
         return bricks;
     }
-
     public static void UpdateMenuSelection()
     {
         if (selectedIndex == 0)
@@ -63,10 +53,8 @@ partial class Program
             quitButton.FillColor = Color.Yellow;
         }
     }
-
     static void Main()
     {
-
 
         ////////////////////////////////////
         /// Gestion fenetre
@@ -106,15 +94,14 @@ partial class Program
         List<string> menuItems = new() {"Jouer","Options","Quitter"};
         int selectedIndex = 0;
 
-        
-
         ///////////////////////////////
         /// étoiles du background
         /// 
 
-
         stars = new();
 
+
+        
         void CreateStarLayer(int count, float speed, float sizeMin, float sizeMax, byte alpha)
         {
             for (int i = 0; i < count; i++)
@@ -137,14 +124,9 @@ partial class Program
         int cometWaveSize = 2;
 
 
-
         //////////////////
         /// Menu
         /// 
-        /// 
-        /// 
-        /// 
-
 
         void UpdateOptions()
         {
@@ -213,14 +195,12 @@ partial class Program
 
                 Vector2f startPos = new Vector2f(600 + i * 40, y);
 
-             
                 Vector2f dir = new Vector2f(-1f, 0.5f + angleOffset);
 
                 comets.Add(new Comet(startPos, dir,2));
             }
         }
 
-        
         while (window.IsOpen)
         {
             window.DispatchEvents();
@@ -238,7 +218,6 @@ partial class Program
       
             comets.RemoveAll(c => c.IsOffScreen(window.Size));
 
-       
             cometWaveTimer += deltaTime;
 
             if (cometWaveTimer >= cometWaveInterval)
@@ -246,8 +225,6 @@ partial class Program
                 SpawnCometWave();
                 cometWaveTimer = 0f;
             }
-
-
 
             foreach (var star in stars)
             {
@@ -300,8 +277,5 @@ partial class Program
 
             window.Display();
         }
-
-
     }
-
 }

@@ -5,48 +5,7 @@ using SFML.Audio;
 
 using System.Text.Json;
 
-public class ExplosionEffect
-{
-    public CircleShape Shape { get; private set; }
-    private float duration = 0.4f;
-    private float elapsed = 0f;
-    private float maxRadius;
-    private Vector2f center;
 
-    public bool IsFinished => elapsed >= duration;
-
-    public ExplosionEffect(Vector2f position, float size)
-    {
-        center = position;
-        maxRadius = size * 1.5f;
-
-        Shape = new CircleShape(10)
-        {
-            FillColor = new Color(255, 100, 0, 180),
-            Origin = new Vector2f(0, 0),
-            Position = center
-        };
-    }
-
-    public void Update(float deltaTime)
-    {
-        elapsed += deltaTime;
-        float t = elapsed / duration;
-
-        float radius = maxRadius * t;
-        Shape.Radius = radius;
-        Shape.Origin = new Vector2f(radius, radius);
-        Shape.Position = center;
-
-        byte alpha = (byte)(180 * (1 - t));
-        Shape.FillColor = new Color(255, 100, 0, alpha);
-    }
-
-    public void Draw(RenderWindow window)
-    {
-        window.Draw(Shape);
-    }
-}
 public enum BonusType
 {
     PaddleGrow,

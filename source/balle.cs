@@ -57,30 +57,32 @@ public class Ball
     }
 
     public void CheckWallCollision(Vector2u windowSize )
-{
-    var pos = Shape.Position;
-
-    
-    if (pos.X - Radius <= 8f)
     {
-        Velocity = new Vector2f(MathF.Abs(Velocity.X), Velocity.Y); 
-        Shape.Position = new Vector2f(8f + Radius + 0.5f, pos.Y); 
+        var pos = Shape.Position;
+
+
+        if (pos.X - Radius <= 8f)
+        {
+            Velocity = new Vector2f(MathF.Abs(Velocity.X), Velocity.Y);
+            Shape.Position = new Vector2f(8f + Radius + 0.5f, pos.Y);
+            bordsSound.Play();
+        }
+        else if (pos.X + Radius >= windowSize.X - 8f)
+        {
+            Velocity = new Vector2f(-MathF.Abs(Velocity.X), Velocity.Y);
+            Shape.Position = new Vector2f(windowSize.X - 8f - Radius - 0.5f, pos.Y);
+            bordsSound.Play();
+        }
+
+
+        if (pos.Y - Radius <= 8f)
+        {
+            Velocity = new Vector2f(Velocity.X, MathF.Abs(Velocity.Y)); 
+            Shape.Position = new Vector2f(pos.X, 8f + Radius + 0.5f);
+        }
+
+
     }
-    else if (pos.X + Radius >= windowSize.X - 8f)
-    {
-        Velocity = new Vector2f(-MathF.Abs(Velocity.X), Velocity.Y); 
-        Shape.Position = new Vector2f(windowSize.X - 8f - Radius - 0.5f, pos.Y);
-    }
-
-
-    if (pos.Y - Radius <= 8f)
-    {
-        Velocity = new Vector2f(Velocity.X, MathF.Abs(Velocity.Y)); 
-        Shape.Position = new Vector2f(pos.X, 8f + Radius + 0.5f);
-    }
-
-
-}
 
     public void CheckPaddleCollision(RectangleShape paddle)
     {

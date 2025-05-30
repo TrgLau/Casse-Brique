@@ -1,11 +1,22 @@
+
+using System.IO;
+using System.IO.Compression;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Security.Principal;
+using System.IO;
+
 using SFML.Graphics;
 using SFML.System;
 using SFML.Window;
 using SFML.Audio;
 
-using System.Text.Json;
-using System.Security.Principal;
-
+public class HighScoreEntry
+{
+    public string Name { get; set; }
+    public int Score { get; set; }
+    public string Date { get; set; } 
+}
 
 partial class Program
 {
@@ -16,11 +27,48 @@ partial class Program
     static float laserTimer = 0f;
     static List<RectangleShape> lasers = new();
     const float laserSpeed = 600f;
-    
     static bool isFireBallActive = false;
     static float fireBallTimer = 0f;
 
+    static void SaveScore(int newScore, string name = "Player")
+    {
+        string path = "highscores.json";
+        List<HighScoreEntry> scores = new();
 
+        
+        if (File.Exists(path))
+        {
+            try
+            {
+                string json = File.ReadAllText(path);
+                scores = JsonSerializer.Deserialize<List<HighScoreEntry>>(json);
+            }
+            catch
+            {
+                scores = new();
+            }
+        }
+
+        
+        scores.Add(new HighScoreEntry
+        {
+            Name = name,
+            Score = newScore,
+            Date = DateTime.Now.ToString("yyyy-MM-dd HH:mm")
+        });
+
+        
+        scores = scores
+            .OrderByDescending(s => s.Score)
+            .ThenBy(s => s.Date) 
+            .Take(10)
+            .ToList();
+
+
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        string newJson = JsonSerializer.Serialize(scores, options);
+        File.WriteAllText(path, newJson);
+    }
     static void gameloop()
     {
 
@@ -59,7 +107,7 @@ partial class Program
             window.Draw(star.Shape);
         }
 
-        
+
 
 
         var scoreText = new Text("Score: 0", font, 24)
@@ -97,7 +145,7 @@ partial class Program
             FillColor = Color.Yellow
         };
 
-        float laserCooldown = 0f;
+        float laserCooldown = 0.2f;
         void SpawnEntities()
         {
             entities.Add(new Entity(new Vector2f(300, 200)));
@@ -130,7 +178,7 @@ partial class Program
                     break;
                 case BonusType.Laser:
                     isLaserActive = true;
-                    laserTimer = 20f;
+                    laserTimer = 10f;
                     break;
                 case BonusType.FireBall:
                     isFireBallActive = true;
@@ -148,10 +196,30 @@ partial class Program
 
         }
 
+
+        List<Comet> comets = new();
+        List<ExplosionCircle> explosions = new();
+        List<FlashComet> flashComets = new();
+
+        void SpawnCometExplosion(Vector2f center, int count = 24)
+        {
+            explosions.Add(new ExplosionCircle(center));
+
+            float angleStep = 360f / count;
+            for (int i = 0; i < count; i++)
+            {
+                float angleRad = (i * angleStep) * (MathF.PI / 180f);
+                Vector2f dir = new Vector2f(MathF.Cos(angleRad), MathF.Sin(angleRad));
+                flashComets.Add(new FlashComet(center, 3, dir, 500f, 0.45f));
+            }
+        }
+
+
         while (window.IsOpen)
         {
             window.DispatchEvents();
             window.Clear(Color.Black);
+            window.Draw(gameBorder);
 
             deltaTime = clock.Restart().AsSeconds();
 
@@ -190,11 +258,10 @@ partial class Program
                 laserCooldown -= deltaTime;
             }
 
-            window.Draw(gameBorder);
-            timeSinceLevelStart += deltaTime;
-     
 
-         
+            timeSinceLevelStart += deltaTime;
+
+
             if (doubleScoreTimer > 0)
                 doubleScoreTimer -= deltaTime;
 
@@ -231,8 +298,9 @@ partial class Program
 
             if (flashStarsTimer > 0f)
                 flashStarsTimer -= deltaTime;
-            foreach (var star in stars)
 
+
+            foreach (var star in stars)
             {
                 float starIntensity = flashStarsTimer > 0 ? 3.5f : 1.0f;
                 star.Update(deltaTime, 600, starIntensity);
@@ -252,7 +320,7 @@ partial class Program
             foreach (var brick in bricks)
                 brick.Draw(window);
 
-            bricks.RemoveAll(b => b.CanBeRemoved());
+
 
             if (bricks.Count == 0)
             {
@@ -289,17 +357,7 @@ partial class Program
             }
             window.Draw(scoreText);
 
-            foreach (var entity in entities)
-            {
-                foreach (var ball in balls)
-                {
-                    if (entity.CheckCollision(ball))
-                    {
-                        entity.IsAlive = false;
-                        score += isDoubleScoreActive ? 1000 : 500;
-                    }
-                }
-            }
+
             foreach (var ball in balls)
             {
                 float speedMultiplier = 1.0f + (timeSinceLevelStart / 20f * 0.1f);
@@ -325,22 +383,65 @@ partial class Program
             if (balls.Count == 0 && !isGameOver)
             {
                 isGameOver = true;
+                SaveScore(score, "Player");
                 score = 0;
 
 
             }
 
+
+
+
+
+            foreach (var e in explosions.ToList())
+            {
+                e.Update(deltaTime);
+                if (e.IsFinished)
+                    explosions.Remove(e);
+            }
+
+            foreach (var comet in flashComets.ToList())
+            {
+                comet.Update(deltaTime);
+                if (comet.IsDead)
+                    flashComets.Remove(comet);
+            }
+
+
+            if (Keyboard.IsKeyPressed(Keyboard.Key.C))
+            {
+                // TODO pour faire des tests
+            }
+
+
+
+            //////////////////////////////////
+            /// 
+            ///  Gestion des bonus
+            /// 
+            /// 
+
+            foreach (var entity in entities)
+            {
+                foreach (var ball in balls)
+                {
+                    if (entity.CheckCollision(ball))
+                    {
+                        entity.IsAlive = false;
+                        score += isDoubleScoreActive ? 1000 : 500;
+                    }
+                }
+            }
             foreach (var e in entities)
             {
                 if (e.IsAlive)
                     window.Draw(e.Shape);
             }
-            if (isGameOver)
-            {
-                ResetLevel();
-                timeSinceLevelStart = 0f;
-            }
 
+
+
+            foreach (var laser in lasers)
+                window.Draw(laser);
             foreach (var laser in lasers.ToList())
             {
                 laser.Position -= new Vector2f(0, laserSpeed * deltaTime);
@@ -350,6 +451,7 @@ partial class Program
                     if (laser.GetGlobalBounds().Intersects(brick.Shape.GetGlobalBounds()))
                     {
                         brick.Hit();
+                        SpawnCometExplosion(new Vector2f(laser.Position.X, laser.Position.Y));
                         if (brick.IsDestroyed)
                             score += isDoubleScoreActive ? 200 : 100;
 
@@ -361,9 +463,6 @@ partial class Program
                 if (laser.Position.Y < 0)
                     lasers.Remove(laser);
             }
-
-            foreach (var laser in lasers)
-                window.Draw(laser);
 
             if (isLaserActive)
             {
@@ -380,8 +479,35 @@ partial class Program
                 };
                 window.Draw(fireBallText);
             }
+
+            foreach (var e in explosions)
+                e.Draw(window);
+
+            foreach (var c in comets)
+                c.Draw(window);
+
+
+
             window.Draw(doubleScoreText);
+
+
+
+
+
+            //////////////////////////////////
+            /// 
+            ///  Ménage
+
             balls.RemoveAll(b => b.IsOutOfBounds(window.Size.Y));
+            comets.RemoveAll(c => c.IsOffScreen(window.Size));
+            bricks.RemoveAll(b => b.CanBeRemoved());
+
+            if (isGameOver)
+            {
+                ResetLevel();
+                timeSinceLevelStart = 0f;
+            }
+
             window.Display();
 
         }

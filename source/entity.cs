@@ -10,15 +10,12 @@ public class Entity
 {
     public CircleShape Shape;
     public bool IsAlive = true;
-
     private Vector2f velocity;
     private float speed = 60f;
     private float directionTimer = 0f;
     private static Random rand = new();
-
     private float spawnFlashTimer = 0.5f;
     
-
     public Entity(Vector2f position, float radius = 12f)
     {
         Shape = new CircleShape(radius)
@@ -30,7 +27,7 @@ public class Entity
 
         velocity = GetRandomDirection() * speed;
     }
-
+    
     public void Update(float deltaTime, Vector2u windowSize)
     {
         if (!IsAlive) return;
@@ -39,12 +36,12 @@ public class Entity
         {
             spawnFlashTimer -= deltaTime;
 
-            float pulse = (float)(Math.Sin(spawnFlashTimer * 20f) + 1f) / 2f; 
+            float pulse = (float)(Math.Sin(spawnFlashTimer * 20f) + 1f) / 2f;
             Shape.FillColor = new Color(255, 255, 255, (byte)(255 * pulse));
         }
         else
         {
-          
+
             if (Shape.FillColor != new Color(255, 0, 255))
                 Shape.FillColor = new Color(255, 0, 255);
         }
@@ -58,10 +55,9 @@ public class Entity
 
         Vector2f pos = Shape.Position + velocity * deltaTime;
 
-       
         if (pos.X < 0 + 8f || pos.X > windowSize.X - 8f)
             velocity.X *= -1;
-        if (pos.Y < 0 +8f || pos.Y > windowSize.Y)
+        if (pos.Y < 0 + 8f || pos.Y > windowSize.Y)
             velocity.Y *= -1;
 
         Shape.Position += velocity * deltaTime;

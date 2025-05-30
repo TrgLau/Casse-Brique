@@ -46,7 +46,7 @@ public class Brick
 
         if (Health <= 0 && explosionEffect == null)
         {
-            explosionEffect = new ExplosionEffect(Shape.Position, Shape.Size.X);
+            explosionEffect = new ExplosionEffect(Shape.Position, Shape.Size.X / 2);
             return true;
         }
         else return false;
@@ -82,19 +82,14 @@ public class Brick
         };
     }
 }
-
-
-
 public class LevelData
 {
     public List<Level> levels { get; set; }
 }
-
 public class Level
 {
     public List<BrickData> bricks { get; set; }
 }
-
 public class BrickData
 {
     public float x { get; set; }
@@ -105,7 +100,6 @@ public class BrickData
 
     public string type { get; set; }
 }
-
 public static class LevelLoader
 {
     public static List<Brick> LoadLevel(string jsonPath, int levelIndex)
